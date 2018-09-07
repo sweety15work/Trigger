@@ -1,0 +1,31 @@
+public class TBN_NonPCTransactionHandler {
+    
+    public  static void onBeforeInsert(List<Non_PC_Transaction__c > lstNewNonPCTransaction) {
+        createNonPCTransaction(lstNewNonPCTransaction );
+        
+    }
+    private static void createNonPCTransaction(List<Non_PC_Transaction__c > lstNewNonPCTransaction) {	
+        
+        set<Id> setFinancialAccountIds = new set<Id>();
+        List<Non_PC_Transaction__c> lstNonPCTransaction = new  List<Non_PC_Transaction__c>();
+        
+        for(Non_PC_Transaction__c objNONPCTransaction : lstNewNonPCTransaction ){
+            if(objNONPCTransaction.Financial_Account__c != NULL && !setFinancialAccountIds.contains(objNONPCTransaction.Financial_Account__c)){
+                objNONPCTransaction.New_Record__c= true;
+                setFinancialAccountIds.add(objNONPCTransaction.Financial_Account__c);
+                            } 
+        }
+        
+        for(Non_PC_Transaction__c objInstance : [SELECT Id,Name, createdDate ,Financial_Account__c 
+                                                 FROM Non_PC_Transaction__c  
+                                                 WHERE Financial_Account__c = :setFinancialAccountIds
+                                                 ]){
+                                                    objInstance.New_Record__c = false;
+                                                    lstNonPCTransaction.add(objInstance);
+                                                }
+        
+        if(!lstNonPCTransaction.isEmpty())
+            update lstNonPCTransaction;
+    } 
+    
+}
